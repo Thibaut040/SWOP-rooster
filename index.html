@@ -1,0 +1,827 @@
+<!-- SWOP &#x2013; Mijn lessen. Plak dit in Google Sites via Invoegen > Insluiten > Code insluiten
+     en maak het blok zo hoog als je wilt.
+     Dit blok bevat geen links naar de roosters en geen namen. Het krijgt enkel JOUW resultaat van Ufora,
+     binnen je eigen browser: via een verborgen kader (o.a. Chrome) of via een klein venster (o.a. Safari). -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&display=swap">
+<style>
+  :root {
+    --teal: #4295A5;          /* SWOP-teal (swopgent.be) \2013  accenten */
+    --teal-knop: #327887;     /* knoppen: witte tekst haalt 5:1 */
+    --teal-tekst: #2C6E7B;    /* teal tekst op een licht vlak */
+    --teal-licht: #EAF4F6;
+    --tekst: #1d1d1f;
+    --grijs: #6e6e73;
+    --lijn: #e5e5ea;
+    --vlak: #f5f5f7;
+    --rood: #b42318;
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #fff; color: var(--tekst);
+         font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; -webkit-font-smoothing: antialiased; }
+  .app { max-width: 980px; margin: 0 auto; padding: 20px 20px 36px; }
+  h1, h2, .maand, .dg, .groepwaarde { font-family: Montserrat, system-ui, sans-serif; }
+  code { background: var(--vlak); padding: 1px 6px; border-radius: 6px; user-select: all; word-break: break-all; font-size: .85em; }
+
+  /* Kop met logo */
+  .kop { display: flex; align-items: center; gap: 20px; padding-bottom: 18px; border-bottom: 1px solid var(--lijn); }
+  .logo { width: 128px; height: auto; display: block; flex: none; }
+  h1 { margin: 0; font-size: 1.65rem; font-weight: 800; line-height: 1.1; letter-spacing: -0.015em; }
+  .sub { margin: 4px 0 0; color: var(--grijs); font-size: .93rem; }
+  h2 { font-size: 1.05rem; font-weight: 700; margin: 30px 0 12px; letter-spacing: -0.005em; }
+  .grijs { color: var(--grijs); } .nee { color: var(--rood); }
+
+  /* Laden */
+  .laden { margin-top: 22px; padding: 18px; border: 1px solid var(--lijn); border-radius: var(--radius); transition: opacity 180ms ease; }
+  .laden.weg { opacity: 0; }
+  .laden p { margin: 0 0 10px; color: var(--grijs); font-size: .93rem; }
+  .balk { height: 6px; background: var(--vlak); border-radius: 99px; overflow: hidden; }
+  .balk-vulling { height: 100%; background: var(--teal); border-radius: 99px; transform: scaleX(0.04); transform-origin: left; transition: transform 300ms var(--ease-out); }
+  .laadlijst { list-style: none; display: flex; flex-wrap: wrap; gap: 6px; padding: 0; margin: 12px 0 0; }
+  .laadlijst li { font-size: .8rem; padding: 2px 10px; border-radius: 99px; background: var(--vlak); color: var(--grijs); transition: background-color 150ms ease, color 150ms ease; }
+  .laadlijst li.klaar { background: var(--teal-licht); color: var(--teal-tekst); }
+  .laadlijst li.fout { background: #fdecea; color: var(--rood); }
+
+  /* Groepen */
+  .groepen { display: flex; flex-wrap: wrap; gap: 10px; }
+  .groepkaart { border: 1px solid var(--lijn); border-radius: var(--radius); padding: 10px 16px; min-width: 160px; }
+  .groepnaam { font-size: .8rem; color: var(--grijs); }
+  /* Jaarlabel (MA2, BA3 \2026 ) in SWOP-teal, zoals het oranje label bij "Lessen NIET in dit rooster" */
+  .jaarlabel { display: inline-block; font: 700 .7rem/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; letter-spacing: .02em;
+               padding: 0 7px; margin-right: 7px; border-radius: 6px; background: var(--teal-licht); color: var(--teal-tekst); vertical-align: 1px; }
+  .groepwaarde { font-weight: 700; font-size: 1.15rem; color: var(--teal-tekst); letter-spacing: -0.01em; }
+
+  /* Werkbalk (blijft bovenaan bij scrollen) */
+  .werkbalk { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; justify-content: space-between;
+              padding: 10px 0; margin-bottom: 4px; background: rgba(255, 255, 255, .86);
+              -webkit-backdrop-filter: blur(12px) saturate(180%); backdrop-filter: blur(12px) saturate(180%); border-bottom: 1px solid var(--lijn); }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .chip { font: inherit; font-size: .84rem; line-height: 1.3; padding: 5px 12px; border-radius: 99px; border: 1px solid var(--lijn); background: #fff; color: var(--tekst); cursor: pointer;
+          transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease, transform 100ms var(--ease-out); }
+  .chip.aan { background: var(--teal-licht); border-color: var(--teal); color: var(--teal-tekst); }
+  .chip.deels { background: #f4fafb; border-color: #a9d0d8; color: var(--teal-tekst); }
+  .chip.uit { color: var(--grijs); }
+  .chip .aantal { opacity: .75; margin-left: 4px; font-variant-numeric: tabular-nums; }
+  .chip.tekstknop { border-color: transparent; background: none; color: var(--teal-tekst); font-weight: 600; padding: 5px 8px; }
+  .hoofdknop { font: inherit; font-weight: 600; padding: 9px 18px; border: 0; border-radius: 99px; background: var(--teal-knop); color: #fff; cursor: pointer; white-space: nowrap;
+               transition: background-color 150ms ease, transform 100ms var(--ease-out); }
+  .hoofdknop:disabled { background: #c7c7cc; cursor: default; }
+  .knopkort { display: none; }                  /* korte knoptekst: enkel op een gsm (zie onder) */
+  .chip:active, .hoofdknop:active:not(:disabled) { transform: scale(0.97); }
+  @media (hover: hover) and (pointer: fine) {
+    .chip:hover { border-color: var(--teal); }
+    .chip.tekstknop:hover { background: var(--teal-licht); }
+    .hoofdknop:hover:not(:disabled) { background: var(--teal-tekst); }
+  }
+
+  /* Lessen per maand */
+  .maand { font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--grijs); margin: 22px 0 2px; }
+  .les { display: grid; grid-template-columns: 24px 54px 108px 40px minmax(0, 1fr) minmax(110px, 210px);
+         grid-template-areas: "vink datum uur jaar titel waar"; gap: 2px 14px; align-items: start;
+         padding: 11px 4px; border-bottom: 1px solid var(--lijn); cursor: pointer; transition: opacity 150ms ease; }
+  .les.uit { opacity: .45; }
+  .les .vink { grid-area: vink; } .datum { grid-area: datum; } .uur { grid-area: uur; } .jaarkolom { grid-area: jaar; padding-top: 3px; line-height: 1.5; } .titelvak { grid-area: titel; } .waar { grid-area: waar; }
+  .datum { line-height: 1.05; }
+  .wd { display: block; font-size: .72rem; color: var(--grijs); text-transform: uppercase; letter-spacing: .05em; }
+  .dg { font-weight: 700; font-size: 1.3rem; letter-spacing: -0.02em; }
+  .uur { font-variant-numeric: tabular-nums; padding-top: 3px; }
+  .titel { font-weight: 600; padding-top: 2px; }
+  .info { font-size: .84rem; color: var(--grijs); margin-top: 2px; overflow-wrap: anywhere; }
+  .waar { font-size: .9rem; color: var(--teal-tekst); padding-top: 3px; overflow-wrap: anywhere; }
+  .les.voorbij .dg, .les.voorbij .uur { color: var(--grijs); }
+  .label { display: inline-block; font-size: .7rem; font-weight: 600; padding: 1px 7px; border-radius: 99px; margin-left: 6px; vertical-align: 1px; }
+  .label.vandaag { background: var(--teal-knop); color: #fff; }
+  .label.voorbij { background: var(--vlak); color: var(--grijs); }
+
+  /* Vinkje */
+  .vink { appearance: none; -webkit-appearance: none; width: 20px; height: 20px; margin: 3px 0 0; border: 1.5px solid #c7c7cc; border-radius: 6px; background: #fff;
+          display: grid; place-content: center; cursor: pointer; transition: background-color 120ms ease, border-color 120ms ease; }
+  .vink::after { content: ""; width: 10px; height: 5px; border-left: 2px solid #fff; border-bottom: 2px solid #fff;
+                 transform: translateY(-1px) rotate(-45deg) scale(0.6); opacity: 0; transition: transform 120ms var(--ease-out), opacity 120ms ease; }
+  .vink:checked { background: var(--teal-knop); border-color: var(--teal-knop); }
+  .vink:checked::after { opacity: 1; transform: translateY(-1px) rotate(-45deg) scale(1); }
+  .vink:focus-visible, .chip:focus-visible, .hoofdknop:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+
+  .leeg { padding: 18px; border: 1px solid var(--lijn); border-radius: var(--radius); color: var(--grijs); }
+  .uitleg { font-size: .84rem; color: var(--grijs); margin: 10px 0 0; }
+
+  /* Lessen NIET in dit rooster (oranje, standaard open) */
+  .nakijken { margin-top: 30px; border: 1px solid #fedf89; border-radius: var(--radius); background: #fffcf0; }
+  .nakijken summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: var(--radius);
+                      transition: background-color 150ms ease; }
+  .nakijken summary::-webkit-details-marker { display: none; }
+  .nakijken summary:focus { outline: none; }
+  .nakijken summary:focus-visible { outline: 2px solid #dc6803; outline-offset: 2px; }
+  .kopicoon { flex: none; width: 22px; height: 22px; color: #b54708; align-self: flex-start; margin-top: 1px; }
+  .nakijken .koptekst { flex: 1; min-width: 0; }
+  .nakijken .koptitel { display: block; font-family: Montserrat, system-ui, sans-serif; font-weight: 700; font-size: 1rem; letter-spacing: -0.005em; color: #93370d; }
+  .nakijken .kopuitleg { display: block; font-size: .88rem; color: #93370d; font-weight: 600; }
+  .teller { flex: none; min-width: 26px; padding: 2px 8px; border-radius: 99px; background: #fef0c7; color: #93370d;
+            font-weight: 700; font-size: .8rem; text-align: center; font-variant-numeric: tabular-nums; }
+  .pijl { flex: none; width: 18px; height: 18px; color: #b54708; transition: transform 200ms var(--ease-out); }
+  .nakijken[open] .pijl { transform: rotate(90deg); }
+  .nakijken .inhoud { padding: 0 16px 6px 50px; }
+  .nakijken[open] .inhoud { animation: openklap 200ms var(--ease-out); }
+  @keyframes openklap { from { opacity: 0; transform: translateY(-4px); } }
+  .soort { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: #93370d; margin: 10px 0 2px; }
+  .soortuitleg { font-size: .84rem; color: var(--grijs); margin: 0 0 4px; }
+  .punt { display: flex; gap: 10px; align-items: baseline; padding: 9px 0; border-top: 1px solid #fef0c7; font-size: .9rem; }
+  .punt:first-of-type { border-top: 0; }
+  .jaar { flex: none; font-size: .72rem; font-weight: 700; padding: 1px 7px; border-radius: 6px; background: #fef0c7; color: #93370d; }
+  .punt .wat { font-weight: 600; } .punt .waarom { color: var(--grijs); }
+
+  /* Naam niet gevonden */
+  .melding { margin-top: 26px; display: flex; gap: 14px; padding: 18px; border: 1px solid var(--lijn); border-radius: var(--radius); background: var(--vlak); }
+  .melding svg { flex: none; width: 24px; height: 24px; color: var(--teal-tekst); margin-top: 1px; }
+  .melding strong { display: block; font-family: Montserrat, system-ui, sans-serif; font-weight: 700; font-size: 1.02rem; margin-bottom: 4px; }
+  .melding p { margin: 0 0 6px; }
+  .melding a { color: var(--teal-tekst); font-weight: 600; }
+  .gezocht { font-size: .82rem; color: var(--grijs); margin-top: 10px !important; }
+
+  /* Probleem melden */
+  .melden { margin-top: 6px; }
+  .meldknop { font: inherit; font-size: .84rem; display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; margin-left: -8px; border: 0; border-radius: 99px;
+              background: none; color: var(--teal-tekst); font-weight: 600; cursor: pointer; transition: background-color 150ms ease, transform 100ms var(--ease-out); }
+  .meldknop svg { width: 15px; height: 15px; }
+  .meldknop:active { transform: scale(0.97); }
+  .meldknop:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+  .meldpaneel { margin-top: 8px; padding: 16px; border: 1px solid var(--lijn); border-radius: var(--radius); animation: openklap 200ms var(--ease-out); }
+  .meldlabel { display: block; font-weight: 600; margin-bottom: 6px; }
+  .meldpaneel textarea { width: 100%; box-sizing: border-box; font: inherit; padding: 9px 12px; border: 1px solid var(--lijn); border-radius: 10px; resize: vertical; }
+  .meldpaneel textarea:focus-visible { outline: 2px solid var(--teal); outline-offset: 1px; border-color: transparent; }
+  .meldinfo { font-size: .82rem; color: var(--grijs); margin: 8px 0 12px; }
+  .meldinfo:empty { display: none; }
+  .meldknoppen { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .meldklaar { margin: 0; font-weight: 600; color: var(--teal-tekst); }
+  @media (hover: hover) and (pointer: fine) { .meldknop:hover { background: var(--teal-licht); } }
+
+  /* Bevestigingsvenster voor het importeren */
+  .bevestig { border: 0; border-radius: 16px; padding: 24px; width: min(420px, calc(100vw - 32px)); box-sizing: border-box; color: var(--tekst);
+              box-shadow: 0 24px 64px rgba(16, 32, 38, .22); }
+  .bevestig::backdrop { background: rgba(16, 32, 38, .35); }
+  .bevestig[open] { animation: modaalIn 200ms var(--ease-out); }
+  .bevestig[open]::backdrop { animation: vervaag 200ms ease; }
+  @keyframes modaalIn { from { opacity: 0; transform: scale(.96); } }
+  .waarschuwicoon { width: 44px; height: 44px; border-radius: 12px; background: #fef3f2; color: var(--rood); display: grid; place-items: center; margin-bottom: 14px; }
+  .waarschuwicoon svg { width: 22px; height: 22px; }
+  .bevestig h2 { margin: 0 0 6px; font: 800 1.2rem/1.2 Montserrat, system-ui, sans-serif; letter-spacing: -0.01em; }
+  .bevestig p { margin: 0 0 20px; color: var(--grijs); }
+  .bevestig .knoppen { display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
+  .secundair { font: inherit; font-weight: 600; padding: 9px 18px; border-radius: 99px; border: 1px solid var(--lijn); background: #fff; color: var(--tekst); cursor: pointer;
+               transition: background-color 150ms ease, transform 100ms var(--ease-out); }
+  .secundair:active { transform: scale(0.97); }
+  .bevestig button:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+  @media (hover: hover) and (pointer: fine) { .secundair:hover { background: var(--vlak); } }
+
+  /* Let op (rood) en privacy */
+  .letop { margin-top: 30px; display: flex; gap: 12px; padding: 14px 16px; border-radius: var(--radius); background: #fef3f2; border: 1px solid #fcd9d4; color: #7a271a; font-size: .9rem; }
+  .letop svg { flex: none; width: 20px; height: 20px; color: var(--rood); margin-top: 1px; }
+  .letop strong { display: block; color: var(--rood); font-family: Montserrat, system-ui, sans-serif; font-weight: 700; }
+  .privacy { display: flex; align-items: center; gap: 8px; margin: 12px 2px 0; font-size: .82rem; color: var(--grijs); }
+  .privacy svg { flex: none; width: 14px; height: 14px; }
+
+  @media (hover: hover) and (pointer: fine) {
+    .nakijken summary:hover { background: #fef6dc; }
+  }
+
+  /* Verschijnen: hoofdinhoud schuift licht omhoog, bijzaken komen alleen in beeld (fade) */
+  .app { position: relative; }
+  @keyframes verschijn { from { opacity: 0; transform: translateY(6px); } }
+  @keyframes vervaag { from { opacity: 0; } }
+  .verschijn { animation: verschijn 280ms var(--ease-out) both; }
+  .verschijn.zacht { animation-name: vervaag; }
+
+  /* Smal scherm (gsm) */
+  @media (max-width: 620px) {
+    .app { padding: 16px 14px 28px; }
+    .kop { gap: 14px; } .logo { width: 96px; } h1 { font-size: 1.35rem; }
+    .les { grid-template-columns: 24px 46px auto minmax(0, 1fr); grid-template-areas: "vink datum uur jaar" "vink datum titel titel" "vink datum waar waar"; gap: 1px 12px; }
+    .jaarkolom { padding-top: 2px; }
+    .uur, .waar { padding-top: 0; }
+    .hoofdknop { width: 100%; }
+    /* Werkbalk blijft ook hier plakken, maar compact in \e9 \e9 n rij: vakknoppen schuiven opzij, korte knoptekst */
+    .werkbalk { flex-wrap: nowrap; gap: 10px; margin: 0 -14px 4px; padding: 8px 14px; }
+    .werkbalk .chips { flex: 1; min-width: 0; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-right: 18px;
+                       -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 22px), transparent);
+                       mask-image: linear-gradient(to right, #000 calc(100% - 22px), transparent); }
+    .werkbalk .chips::-webkit-scrollbar { display: none; }
+    .werkbalk .chip { flex: none; white-space: nowrap; }
+    .werkbalk .hoofdknop { width: auto; flex: none; padding: 9px 15px; }
+    .knoplang { display: none; }
+    .bevestig .knoppen { flex-direction: column-reverse; }
+    .bevestig .knoppen button { width: 100%; }
+    .knopkort { display: inline; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    @keyframes verschijn { from { opacity: 0; } }
+    .chip:active, .hoofdknop:active:not(:disabled), .meldknop:active { transform: none; }
+    .balk-vulling { transition: none; }
+    @keyframes openklap { from { opacity: 0; } }
+    .pijl { transition: none; }
+    .verschijn { animation-delay: 0s !important; }   /* alles tegelijk, alleen fade */
+    @keyframes modaalIn { from { opacity: 0; } }
+    .secundair:active { transform: none; }
+  }
+  @media (prefers-reduced-transparency: reduce) {
+    .werkbalk { background: #fff; -webkit-backdrop-filter: none; backdrop-filter: none; }
+  }
+
+  /* ---------- Siteblok: verbinden, inloggen, geen toegang ---------- */
+  #bron { position: absolute; left: -9999px; top: 0; width: 1px; height: 1px; border: 0; opacity: 0; pointer-events: none; }
+  .infokaart { margin-top: 22px; max-width: 520px; padding: 24px; border: 1px solid var(--lijn); border-radius: 16px; }
+  .infokaart .icoonvak { width: 44px; height: 44px; border-radius: 12px; background: var(--teal-licht); color: var(--teal-tekst);
+                         display: grid; place-items: center; margin-bottom: 14px; }
+  .infokaart .icoonvak.grijs { background: var(--vlak); color: var(--grijs); }
+  .infokaart .icoonvak svg { width: 22px; height: 22px; }
+  .infokaart h2 { margin: 0 0 6px; font: 800 1.3rem/1.15 Montserrat, system-ui, sans-serif; letter-spacing: -0.015em; }
+  .infokaart p { margin: 0 0 16px; color: var(--grijs); }
+  .infokaart p:last-child { margin-bottom: 0; }
+  .infokaart a { color: var(--teal-tekst); font-weight: 600; }
+  .kaartknoppen { display: flex; gap: 8px 12px; align-items: center; flex-wrap: wrap; }
+  .laden.later { animation-delay: 300ms; }      /* snel klaar? dan zie je de laadkaart nooit */
+  @media (max-width: 480px) { .infokaart .hoofdknop { width: 100%; } }
+  .colofon { margin: 32px 2px 0; padding-top: 14px; border-top: 1px solid var(--lijn); font-size: .78rem; color: var(--grijs); text-align: center; }
+</style>
+
+<div class="app">
+  <header class="kop">
+    <img class="logo" alt="SWOP &#x2013; Studentenraad Geneeskunde Gent" src="data:image/webp;base64,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">
+    <div>
+      <h1>Mijn lessen</h1>
+      <p id="status" class="sub">Verbinden met Ufora&#x2026;</p>
+    </div>
+  </header>
+
+
+  <section id="laden" class="laden verschijn zacht later" hidden>
+    <p id="laadtekst">Verbinden met Ufora&#x2026;</p>
+    <div class="balk"><div class="balk-vulling" id="voortgang"></div></div>
+    <ul class="laadlijst" id="laadlijst"></ul>
+  </section>
+
+  <!-- Niet ingelogd (of de browser laat Ufora niet toe binnen deze pagina) -->
+  <section id="inlogkaart" class="infokaart" hidden>
+    <div class="icoonvak"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <rect x="3" y="4.5" width="14" height="12.5" rx="2.5"/><path d="M3 8.5h14M7 2.8v3.4M13 2.8v3.4"/></svg></div>
+    <h2>Log in met Ufora</h2>
+    <p id="inloguitleg"></p>
+    <div class="kaartknoppen">
+      <button id="inlogknop" class="hoofdknop" type="button">Inloggen met Ufora</button>
+      <button id="geentoegangknop" class="chip tekstknop" type="button" hidden>Ik zie &lsquo;Niet geautoriseerd&rsquo;</button>
+    </div>
+  </section>
+
+  <!-- Ingelogd op Ufora, maar geen toegang tot het bestand (geen student geneeskunde) -->
+  <section id="toegangkaart" class="infokaart" hidden>
+    <div class="icoonvak grijs"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <rect x="4" y="9" width="12" height="8.5" rx="2"/><path d="M7 9V6.5a3 3 0 0 1 6 0V9"/></svg></div>
+    <h2>Geen toegang</h2>
+    <p>Je bent ingelogd op Ufora, maar deze tool is enkel voor studenten geneeskunde aan de UGent.</p>
+    <p>Student geneeskunde en toch dit scherm? Pas ingeschreven studenten worden gewoonlijk na enkele dagen opgenomen in het rooster. Eenmaal in het rooster, krijg je direct toegang tot deze pagina.</p>
+  </section>
+
+  <div id="groepen"></div>
+
+  <footer class="colofon">Ontworpen door Thibaut Lagaert voor SWOP &#x2013; studentenraad geneeskunde</footer>
+</div>
+
+<!-- Verborgen: het Ufora-bestand dat je groepen en lessen opzoekt (werkt zonder klikken in o.a. Chrome) -->
+<iframe id="bron" title="Ufora" aria-hidden="true" tabindex="-1"
+        src="https://ufora.ugent.be/content/enforced/1129402-DX00161/SWOP/ufora-rooster.html"></iframe>
+
+<script>
+// =====================================================================
+// INSTELLINGEN
+// =====================================================================
+const UFORA = 'https://ufora.ugent.be';
+
+// Meldknop: Google Form dat in de achtergrond ingevuld en verstuurd wordt.
+// Leeg laten = geen meldknop. Vul in met de ID's uit de "vooraf ingevulde link" van het formulier.
+const MELDFORMULIER = {
+  adres: 'https://docs.google.com/forms/d/e/1FAIpQLScQ9GNJr0WwDV42AHZESEiuAHgABLrXHrj9r1hOTFvZ0SzfBw/formResponse',
+  naam: 'entry.1378606860',           // Naam
+  beschrijving: 'entry.2120689454',   // Wat klopt er niet?
+  gegevens: 'entry.1207833333',       // Gevonden groepen en lessen
+  technisch: 'entry.1418486287',      // Technische info
+};
+
+// Afbeelding op Ufora die alleen laadt als je ingelogd bent (onderscheidt "niet ingelogd" van "geen toegang").
+// Leeg = geen onderscheid: dan altijd de inlogkaart.
+const INLOGPROEF = '';
+
+// =====================================================================
+// HULPFUNCTIES EN AGENDA-EXPORT
+// =====================================================================
+const $uit = document.getElementById('groepen');
+const bron = document.getElementById('bron');
+const BRON = bron.src;
+function status(tekst) { document.getElementById('status').textContent = tekst; }
+function el(tag, tekst, klasse) { const e = document.createElement(tag); if (tekst != null) e.textContent = tekst; if (klasse) e.className = klasse; return e; }
+const pad2 = n => String(n).padStart(2, '0');
+const plusMinuten = (uur, min) => { const [h, m] = uur.split(':').map(Number), t = h * 60 + m + min; return `${pad2(Math.floor(t / 60) % 24)}:${pad2(t % 60)}`; };
+const icsTekst = t => (t || '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n');
+function icsVouw(regel) {                     // regels max. 75 bytes (UTF-8)
+  const uit = []; let huidig = '', bytes = 0;
+  for (const ch of regel) {
+    const n = new TextEncoder().encode(ch).length;
+    if (bytes + n > 74) { uit.push(huidig); huidig = ' '; bytes = 1; }
+    huidig += ch; bytes += n;
+  }
+  uit.push(huidig);
+  return uit.join('\r\n');
+}
+function hash(t) { let h = 5381; for (const ch of t) h = ((h * 33) ^ ch.charCodeAt(0)) >>> 0; return h.toString(16); }
+
+// iCal-titel met groep: "V-lijn III: NKO (groep 3)", "V-lijn V: EHBO (sessie 1, groep 5)"
+function icsTitel(l) {
+  if (!l.groep) return l.wat;
+  return /\(sessie \d+\)$/i.test(l.wat) ? l.wat.replace(/\)$/, `, groep ${l.groep})`) : `${l.wat} (groep ${l.groep})`;
+}
+
+function maakIcs(lessen) {
+  const nu = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
+  const tijd = (datum, uur) => datum.replace(/-/g, '') + 'T' + uur.replace(':', '') + '00';
+  const regels = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//SWOP Gent//Mijn lessen//NL', 'CALSCALE:GREGORIAN',
+    'X-WR-CALNAME:Mijn lessen', 'BEGIN:VTIMEZONE', 'TZID:Europe/Brussels',
+    'BEGIN:DAYLIGHT', 'TZOFFSETFROM:+0100', 'TZOFFSETTO:+0200', 'TZNAME:CEST', 'DTSTART:19700329T020000', 'RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU', 'END:DAYLIGHT',
+    'BEGIN:STANDARD', 'TZOFFSETFROM:+0200', 'TZOFFSETTO:+0100', 'TZNAME:CET', 'DTSTART:19701025T030000', 'RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU', 'END:STANDARD',
+    'END:VTIMEZONE'];
+  for (const l of lessen) {
+    const eind = l.eind || plusMinuten(l.start, 60);
+    const info = [l.info, 'Lessen kunnen wijzigen: controleer altijd het offici\u00eble rooster.'].filter(Boolean).join('\n');
+    regels.push('BEGIN:VEVENT',
+      `UID:${hash([l.datum, l.start, l.wat, l.waar].join('|'))}@swop-zoektool`,
+      `DTSTAMP:${nu}`,
+      `DTSTART;TZID=Europe/Brussels:${tijd(l.datum, l.start)}`,
+      `DTEND;TZID=Europe/Brussels:${tijd(l.datum, eind)}`,
+      icsVouw(`SUMMARY:${icsTekst(icsTitel(l))}`),
+      ...(l.waar ? [icsVouw(`LOCATION:${icsTekst(l.waar)}`)] : []),
+      icsVouw(`DESCRIPTION:${icsTekst(info)}`),
+      'END:VEVENT');
+  }
+  regels.push('END:VCALENDAR');
+  return regels.join('\r\n') + '\r\n';
+}
+
+// <<ROOSTERLEZER
+
+// =====================================================================
+// WEERGAVE
+// =====================================================================
+let resultaatVia = '';
+function toonResultaat(r) {
+    const doelnaam = r.naam, groepen = r.groepen, lessen = r.lessen, notities = r.notities;
+    // ---------- tonen ----------
+    verbergLaden();
+    $uit.innerHTML = '';
+    // Blokken verschijnen als \u00e9\u00e9n golf: kortere tussenstappen naarmate de golf vordert (max. 175 ms)
+    const VERTRAGING = [0, 45, 85, 115, 140, 160, 175];
+    let volgorde = 0;
+    const blok = (tag, klasse, zacht) => {     // zacht = bijzaak: alleen fade, geen verschuiving
+      const b = el(tag, null, ((klasse || '') + ' verschijn' + (zacht ? ' zacht' : '')).trim());
+      b.style.animationDelay = `${VERTRAGING[Math.min(volgorde++, VERTRAGING.length - 1)]}ms`;
+      $uit.appendChild(b);
+      return b;
+    };
+
+    // Naam nergens gevonden: \u00e9\u00e9n duidelijke melding in plaats van twee lege blokken
+    if (!groepen.length && !lessen.length) {
+      toonNietGevonden(doelnaam, blok);
+      toonMelden(doelnaam, groepen, lessen, notities, blok);
+      return;
+    }
+
+    // Groepen
+    blok('h2').textContent = 'Mijn groepen';
+    if (groepen.length) {
+      const g = blok('div', 'groepen');
+      for (const x of groepen) {
+        const kaart = el('div', null, 'groepkaart');
+        const groepnaam = el('div', null, 'groepnaam');
+        groepnaam.append(el('span', x.jaar, 'jaarlabel'), x.indeling);
+        kaart.appendChild(groepnaam);
+        kaart.appendChild(el('div', x.groep, 'groepwaarde'));
+        g.appendChild(kaart);
+      }
+    } else blok('p', 'leeg').textContent = 'Je naam staat in geen enkele groepsindeling, wel in de roosters hieronder.';
+
+    // Lessen
+    blok('h2').textContent = 'Mijn lessen';
+    lessen.sort((a, b) => (a.datum + a.start).localeCompare(b.datum + b.start));
+    if (lessen.length) toonLessen(lessen, blok);
+    else blok('p', 'leeg').textContent = 'Geen lessen gevonden.';
+
+    // Lessen die niet in dit rooster staan (standaard open), gegroepeerd per reden
+    if (notities.length) {
+      const d = blok('details', 'nakijken', true);
+      d.open = true;
+      const sum = el('summary');
+      const kop = el('span', null, 'koptekst');
+      kop.append(el('span', 'Lessen NIET in dit rooster', 'koptitel'), el('span', 'Deze lessen dien je zelf nog in te plannen!', 'kopuitleg'));
+      sum.append(icoon(AGENDA_LET_OP, 'kopicoon'), kop, el('span', String(notities.length), 'teller'), icoon(PIJL, 'pijl'));
+      d.appendChild(sum);
+      const inhoud = el('div', null, 'inhoud');
+      for (const soort of SOORTEN) {
+        const punten = notities.filter(n => soortVan(n[2]) === soort.id);
+        if (!punten.length) continue;
+        const groep = el('section');
+        groep.appendChild(el('h3', soort.titel, 'soort'));
+        if (soort.uitleg) groep.appendChild(el('p', soort.uitleg, 'soortuitleg'));
+        for (const [jaar, tab, tekst] of punten) {
+          const p = el('div', null, 'punt');
+          const t = el('span');
+          t.appendChild(el('span', tab, 'wat'));
+          const detail = detailVan(tekst);
+          if (detail) t.appendChild(el('span', ` \u00b7 ${detail}`, 'waarom'));
+          p.append(el('span', jaar, 'jaar'), t);
+          groep.appendChild(p);
+        }
+        inhoud.appendChild(groep);
+      }
+      d.appendChild(inhoud);
+    }
+
+    // Let op (rood) + privacy
+    const letop = blok('aside', 'letop', true);
+    letop.setAttribute('role', 'note');
+    const tekst = el('div');
+    tekst.append(el('strong', 'Let op'), 'Deze tool leest de roosters automatisch in en kan fouten bevatten. Lessen kunnen bovendien nog wijzigen. Controleer je lessen altijd met het offici\u00eble rooster.');
+    letop.append(icoon(WAARSCHUWING), tekst);
+    toonMelden(doelnaam, groepen, lessen, notities, blok);
+  }
+
+  // ---------- naam niet gevonden ----------
+  function toonNietGevonden(doelnaam, blok) {
+    const nu = new Date(), maand = nu.getMonth() + 1;
+    const startAcademiejaar = maand === 9 || (maand === 10 && nu.getDate() <= 10);   // september t.e.m. 10 oktober
+    const kaart = blok('section', 'melding');
+    kaart.appendChild(icoon(PERSOON_ZOEK));
+    const tekst = el('div');
+    const mail = () => { const a = el('a', 'geneeskunde@ugent.be'); a.href = 'mailto:geneeskunde@ugent.be'; return a; };
+    if (startAcademiejaar) {
+      tekst.appendChild(el('strong', 'Nog maar net ingeschreven?'));
+      const p = el('p', 'Indien je nog maar net bent ingeschreven, kan het enkele werkdagen duren voor je wordt toegewezen aan een groep. Gelieve enkele dagen te wachten. Indien je na 4 werkdagen niet bent toegevoegd, neem contact op met ');
+      p.append(mail(), '.');
+      tekst.appendChild(p);
+    } else {
+      tekst.appendChild(el('strong', 'Jouw naam werd niet teruggevonden in een groep.'));
+      const p = el('p', 'Controleer of je in het rooster staat. Indien dat niet het geval is en dit volgens jou een fout is, neem contact op met ');
+      p.append(mail(), '.');
+      tekst.appendChild(p);
+    }
+    tekst.appendChild(el('p', `Gezocht op: ${doelnaam}`, 'gezocht'));
+    kaart.appendChild(tekst);
+  }
+
+  // ---------- privacy + probleem melden ----------
+  function toonMelden(doelnaam, groepen, lessen, notities, blok) {
+    const meldenAan = !!(MELDFORMULIER.adres && MELDFORMULIER.naam);
+    const privacy = blok('p', 'privacy', true);
+    privacy.append(icoon(SLOT), meldenAan ? 'Geen data worden opgeslagen door SWOP, tenzij je zelf een probleem meldt.' : 'Geen data worden opgeslagen door SWOP.');
+    if (!meldenAan) return;
+
+    const vak = blok('section', 'melden', true);
+    const open = el('button', null, 'meldknop'); open.type = 'button';
+    open.append(icoon(VLAG), 'Probleem melden');
+    const paneel = el('div', null, 'meldpaneel'); paneel.hidden = true;
+    const label = el('label', 'Wat klopt er niet?', 'meldlabel'); label.htmlFor = 'meldtekst';
+    const veld = el('textarea'); veld.id = 'meldtekst'; veld.rows = 3; veld.maxLength = 1000;
+    veld.placeholder = 'Bv. mijn groep voor de P-lijn klopt niet, er ontbreekt een les \u2026';
+    const info = el('p', 'Je naam, je groepen, alle gevonden lessen en je browser worden meegestuurd, zodat SWOP het kan nakijken.', 'meldinfo');
+    const knoppen = el('div', null, 'meldknoppen');
+    const verstuur = el('button', 'Verstuur melding', 'hoofdknop'); verstuur.type = 'button';
+    const annuleer = el('button', 'Annuleer', 'chip tekstknop'); annuleer.type = 'button';
+    const uitslag = el('p', '', 'meldinfo'); uitslag.setAttribute('role', 'status');
+    knoppen.append(verstuur, annuleer);
+    paneel.append(label, veld, info, knoppen, uitslag);
+    vak.append(open, paneel);
+
+    open.onclick = () => { paneel.hidden = false; open.hidden = true; veld.focus(); };
+    annuleer.onclick = () => { paneel.hidden = true; open.hidden = false; };
+    verstuur.onclick = async () => {
+      verstuur.disabled = true; verstuur.textContent = 'Versturen\u2026';
+      // Volledig overzicht van wat de student te zien kreeg, zodat SWOP het naast het rooster kan leggen
+      const dag = d => new Date(d + 'T12:00:00').toLocaleDateString('nl-BE', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' });
+      const lesRegel = l => '- ' + [
+        `${dag(l.datum)} ${l.start}${l.eind ? '\u2013' + l.eind : ''}`, l.jaar, l.wat,
+        l.groep && `groep ${l.groep}`, l.waar || 'geen lokaal', l.info,
+      ].filter(Boolean).join(' \u00b7 ');
+      const regels = [
+        `Groepen (${groepen.length}):`, ...(groepen.length ? groepen.map(g => `- ${g.jaar} \u00b7 ${g.indeling}: ${g.groep}`) : ['- geen']),
+        '', `Lessen (${lessen.length}):`, ...(lessen.length ? lessen.map(lesRegel) : ['- geen']),
+        '', `Niet in rooster (${notities.length}):`, ...(notities.length ? notities.map(n => `- ${n[0]} \u00b7 ${n[1]}: ${n[2]}`) : ['- geen']),
+      ];
+      const gegevens = new URLSearchParams();
+      gegevens.append(MELDFORMULIER.naam, doelnaam);
+      if (MELDFORMULIER.beschrijving) gegevens.append(MELDFORMULIER.beschrijving, veld.value.trim() || '(geen beschrijving)');
+      if (MELDFORMULIER.gegevens) gegevens.append(MELDFORMULIER.gegevens, regels.join('\n'));
+      if (MELDFORMULIER.technisch) gegevens.append(MELDFORMULIER.technisch,
+        `${new Date().toLocaleString('nl-BE')} | via ${resultaatVia} | ${navigator.userAgent}`);
+      try {
+        // Google Forms geeft geen leesbaar antwoord terug (no-cors); een netwerkfout komt wel hier terecht
+        await fetch(MELDFORMULIER.adres, { method: 'POST', mode: 'no-cors', body: gegevens });
+        paneel.replaceChildren(el('p', '\u2713 Bedankt! Je melding is verstuurd naar SWOP.', 'meldklaar'));
+      } catch (_) {
+        verstuur.disabled = false; verstuur.textContent = 'Opnieuw proberen';
+        uitslag.textContent = 'Versturen lukte niet. Controleer je internetverbinding.';
+      }
+    };
+  }
+
+  // Redenen waarom een rooster niet in de lijst staat
+  const SOORTEN = [
+    { id: 'timeedit', titel: 'Staat in TimeEdit', uitleg: 'Deze lessen vind je in TimeEdit.' },
+    { id: 'geen',     titel: 'Geen lessen gevonden', uitleg: '' },
+    { id: 'fout',     titel: 'Niet ingelezen', uitleg: 'Bekijk deze roosters zelf in de groepsindeling.' },
+  ];
+  const soortVan = t => t === 'staat in TimeEdit' ? 'timeedit' : /^(geen lessen gevonden|naam staat \(nog\))/.test(t) ? 'geen' : 'fout';
+  const detailVan = t => t === 'staat in TimeEdit' ? ''
+    : (t.match(/^geen lessen gevonden voor (groep .+)$/) || [])[1] || (/^naam staat \(nog\)/.test(t) ? 'je naam staat er (nog) niet in' : t);
+
+  // Kleine lijn-iconen (stroke = tekstkleur)
+  const PIJL = '<path d="M7 4l6 6-6 6"/>';
+  const WAARSCHUWING = '<path d="M10 3.2 1.9 17h16.2L10 3.2z"/><path d="M10 8.5v3.8"/><path d="M10 14.6v.1"/>';
+  const AGENDA_LET_OP = '<rect x="3" y="4.5" width="14" height="12.5" rx="2.5"/><path d="M3 8.5h14M7 2.8v3.4M13 2.8v3.4M10 11v2.2M10 15.2v.1"/>';
+  const PERSOON_ZOEK = '<circle cx="8" cy="7" r="3"/><path d="M2.5 16.5c.6-2.8 2.8-4.5 5.5-4.5 1 0 1.9.2 2.7.7"/><circle cx="14.5" cy="14" r="2.5"/><path d="m16.4 15.9 1.6 1.6"/>';
+  const VLAG = '<path d="M4.5 17.5V3.5"/><path d="M4.5 4h9.5l-2 3.5 2 3.5H4.5"/>';
+  const SLOT = '<rect x="4" y="9" width="12" height="8.5" rx="2"/><path d="M7 9V6.5a3 3 0 0 1 6 0V9"/>';
+  function icoon(paden, klasse) {
+    const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    s.setAttribute('viewBox', '0 0 20 20'); s.setAttribute('fill', 'none'); s.setAttribute('stroke', 'currentColor');
+    s.setAttribute('stroke-width', '1.8'); s.setAttribute('stroke-linecap', 'round'); s.setAttribute('stroke-linejoin', 'round');
+    s.setAttribute('aria-hidden', 'true');
+    if (klasse) s.setAttribute('class', klasse);
+    s.innerHTML = paden;
+    return s;
+  }
+
+  // ---------- lessen tonen met vinkjes en download ----------
+  function toonLessen(lessen, blok) {
+    const vandaag = new Date().toLocaleDateString('sv-SE');          // JJJJ-MM-DD (lokale tijd)
+    const vinkjes = [], rijen = [];
+
+    // Werkbalk: vakknoppen + download (blijft bovenaan bij scrollen)
+    const werkbalk = blok('div', 'werkbalk');
+    const chips = el('div', null, 'chips');
+    const download = el('button', '', 'hoofdknop'); download.type = 'button';
+    werkbalk.append(chips, download);
+
+    const maakKnop = (tekst, klasse, actie) => {
+      const b = el('button', tekst, 'chip ' + klasse); b.type = 'button';
+      b.onclick = () => { actie(); bijwerken(); };
+      chips.appendChild(b); return b;
+    };
+    maakKnop('Alles', 'tekstknop', () => vinkjes.forEach(v => v.checked = true));
+    maakKnop('Geen', 'tekstknop', () => vinkjes.forEach(v => v.checked = false));
+    // Per vak (het vaste label van elke les): staat alles aan -> alles uit, anders -> alles aan
+    const vakKnoppen = [...new Set(lessen.map(l => l.vak))].sort((a, b) => a.localeCompare(b, 'nl')).map(vak => {
+      const idx = lessen.map((l, i) => l.vak === vak ? i : -1).filter(i => i >= 0);
+      const knop = maakKnop('', 'vakknop', () => {
+        const allesAan = idx.every(i => vinkjes[i].checked);
+        idx.forEach(i => vinkjes[i].checked = !allesAan);
+      });
+      knop.title = vak;
+      return { vak, idx, knop };
+    });
+
+    // Lijst per maand
+    let maand = '', lijst = null;
+    lessen.forEach((l, i) => {
+      const d = new Date(l.datum + 'T12:00:00');
+      const m = d.toLocaleDateString('nl-BE', { month: 'long', year: 'numeric' });
+      if (m !== maand) { maand = m; lijst = blok('section'); lijst.appendChild(el('h3', m, 'maand')); }
+
+      const voorbij = l.datum < vandaag;
+      const rij = el('label', null, 'les' + (voorbij ? ' voorbij' : ''));
+      const vink = document.createElement('input');
+      vink.type = 'checkbox'; vink.className = 'vink';
+      vink.checked = !voorbij;                                       // voorbije lessen standaard niet in de download
+      vink.setAttribute('aria-label', `${l.wat} importeren in je agenda`);
+      vink.onchange = bijwerken;
+      vinkjes.push(vink); rijen.push(rij);
+
+      const datum = el('div', null, 'datum');
+      datum.appendChild(el('span', d.toLocaleDateString('nl-BE', { weekday: 'short' }), 'wd'));
+      datum.appendChild(el('span', String(d.getDate()), 'dg'));
+      const uur = el('div', l.eind ? `${l.start}\u2013${l.eind}` : l.start, 'uur');
+      const titelvak = el('div', null, 'titelvak');
+      const titel = el('div', l.wat, 'titel');
+      const jaarkolom = el('div', null, 'jaarkolom');          // eigen kolom voor het jaarlabel (MA2, BA3 \u2026)
+      jaarkolom.appendChild(el('span', l.jaar, 'jaarlabel'));
+      if (l.datum === vandaag) titel.appendChild(el('span', 'vandaag', 'label vandaag'));
+      else if (voorbij) titel.appendChild(el('span', 'voorbij', 'label voorbij'));
+      titelvak.appendChild(titel);
+      if (l.info) titelvak.appendChild(el('div', l.info, 'info'));
+      const waar = el('div', l.waar || '', 'waar');
+
+      rij.append(vink, datum, uur, jaarkolom, titelvak, waar);
+      lijst.appendChild(rij);
+    });
+
+    const uitleg = blok('p', 'uitleg');
+    uitleg.textContent = 'Vink aan welke lessen je wilt importeren. Je krijgt een agendabestand (.ics) dat je opent in Google Agenda, Outlook of Apple Agenda. Voorbije lessen staan standaard uit.';
+
+    // Lange tekst op een groot scherm, korte op een gsm (de werkbalk blijft daar in \u00e9\u00e9n rij plakken)
+    const knopTekst = (lang, kort) => download.replaceChildren(el('span', lang, 'knoplang'), el('span', kort, 'knopkort'));
+    download.title = 'Importeer de aangevinkte lessen in je agenda';
+
+    // Bevestigingsvenster: waarschuwing voor mogelijke fouten, pas daarna downloaden
+    const dialoog = el('dialog', null, 'bevestig');
+    dialoog.setAttribute('aria-labelledby', 'bevestigtitel');
+    const dIcoon = el('div', null, 'waarschuwicoon'); dIcoon.appendChild(icoon(WAARSCHUWING));
+    const dTitel = el('h2', 'Let op: mogelijke fouten'); dTitel.id = 'bevestigtitel';
+    const dTekst = el('p', 'Deze tool leest de roosters automatisch in en kan fouten bevatten. Controleer je lessen altijd met het offici\u00eble rooster.');
+    const dKnoppen = el('div', null, 'knoppen');
+    const annuleer = el('button', 'Annuleren', 'secundair'); annuleer.type = 'button';
+    const bevestig = el('button', '', 'hoofdknop'); bevestig.type = 'button'; bevestig.autofocus = true;
+    dKnoppen.append(annuleer, bevestig);
+    dialoog.append(dIcoon, dTitel, dTekst, dKnoppen);
+    $uit.appendChild(dialoog);
+    annuleer.onclick = () => dialoog.close();
+    dialoog.addEventListener('click', e => { if (e.target === dialoog) dialoog.close(); });   // klik naast het venster
+    bevestig.onclick = () => { dialoog.close(); importeer(); };
+
+    let bevestiging = null;
+    download.onclick = () => {
+      const n = vinkjes.filter(v => v.checked).length;
+      if (!n) return;
+      bevestig.textContent = `Importeer ${n} ${n === 1 ? 'les' : 'lessen'}`;
+      if (typeof dialoog.showModal === 'function') dialoog.showModal();
+      else if (confirm(dTekst.textContent)) importeer();
+    };
+    function importeer() {
+      const kies = lessen.filter((_, i) => vinkjes[i].checked);
+      if (!kies.length) return;
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([maakIcs(kies)], { type: 'text/calendar;charset=utf-8' }));
+      a.download = 'mijn-lessen.ics';
+      document.body.appendChild(a); a.click(); a.remove();
+      // Bevestiging: kort "Gedownload", daarna weer de teller
+      knopTekst('\u2713 Agendabestand gedownload', '\u2713 Gedownload');
+      clearTimeout(bevestiging);
+      bevestiging = setTimeout(bijwerken, 1800);
+    };
+
+    function bijwerken() {
+      for (const { vak, idx, knop } of vakKnoppen) {
+        const aan = idx.filter(i => vinkjes[i].checked).length;
+        knop.className = 'chip vakknop ' + (aan === idx.length ? 'aan' : aan ? 'deels' : 'uit');
+        knop.textContent = vak.length > 30 ? vak.slice(0, 28) + '\u2026' : vak;
+        knop.appendChild(el('span', `${aan}/${idx.length}`, 'aantal'));
+        knop.setAttribute('aria-pressed', aan === idx.length ? 'true' : aan ? 'mixed' : 'false');
+      }
+      rijen.forEach((r, i) => r.classList.toggle('uit', !vinkjes[i].checked));
+      const n = vinkjes.filter(v => v.checked).length;
+      if (n) knopTekst(`Importeer ${n} ${n === 1 ? 'les' : 'lessen'} in agenda`, `Importeer ${n}`);
+      else knopTekst('Selecteer eerst lessen', 'Kies lessen');
+      download.disabled = !n;
+    }
+    bijwerken();
+  }
+
+
+// =====================================================================
+// VERBINDING MET UFORA
+// =====================================================================
+const $laden = document.getElementById('laden'), $inlog = document.getElementById('inlogkaart'), $toegang = document.getElementById('toegangkaart');
+let aanbieder = null, venster = null, controle = null, wachten = null, besloten = false, resultaat = null;
+
+function toonKaart(kaart) {
+  for (const k of [$laden, $inlog, $toegang]) k.hidden = k !== kaart;
+  if (kaart && kaart !== $laden) { kaart.classList.remove('verschijn'); void kaart.offsetWidth; kaart.classList.add('verschijn'); }
+}
+function verbergLaden() {
+  if ($laden.hidden) return;
+  // Laadkaart neemt meteen geen plaats meer in: de resultaten verschijnen op dezelfde plek terwijl de kaart vervaagt
+  $laden.style.cssText = `position:absolute;top:${$laden.offsetTop}px;left:${$laden.offsetLeft}px;width:${$laden.offsetWidth}px;margin:0;pointer-events:none`;
+  $laden.classList.add('weg');
+  setTimeout(() => { $laden.hidden = true; $laden.style.cssText = ''; $laden.classList.remove('weg'); }, 200);
+}
+const INLOGTEKST = {
+  start: 'Je lessen worden opgehaald via je Ufora-account. Er opent een klein venster; log daar in als dat gevraagd wordt.',
+  venster: 'Log in in het venster dat openging. Je lessen verschijnen daarna hier.',
+  opnieuw: 'Klaar met inloggen? Klik dan nog eens op de knop.',
+  geblokkeerd: 'Je browser hield het venster tegen. Sta pop-ups toe voor deze pagina en probeer opnieuw.',
+  twijfel: 'Log in in het venster als dat gevraagd wordt. Staat er \u201cNiet geautoriseerd\u201d? Dan heb je geen toegang tot deze tool.',
+};
+function toonInlog(variant) {
+  document.getElementById('inloguitleg').textContent = INLOGTEKST[variant];
+  document.getElementById('inlogknop').textContent = variant === 'opnieuw' ? 'Toon mijn lessen' : variant === 'venster' || variant === 'twijfel' ? 'Venster opnieuw openen' : 'Inloggen met Ufora';
+  document.getElementById('geentoegangknop').hidden = variant !== 'twijfel';
+  status('');
+  if ($inlog.hidden) toonKaart($inlog);
+}
+function toonVoortgang(d) {
+  const lijst = document.getElementById('laadlijst');
+  if (!lijst.children.length) for (const j of d.jaren) lijst.appendChild(el('li', j));
+  [...lijst.children].forEach((li, i) => {
+    const j = d.jaren[i];
+    if (j in d.klaar) { li.className = d.klaar[j] ? 'klaar' : 'fout'; li.textContent = `${j} ${d.klaar[j] ? '\u2713' : '\u2715'}`; }
+  });
+  const n = Object.keys(d.klaar).length;
+  document.getElementById('voortgang').style.transform = `scaleX(${Math.max(0.04, n / d.jaren.length)})`;
+}
+
+// Berichten van het Ufora-bestand (in het verborgen kader of in het venster)
+window.addEventListener('message', e => {
+  if (e.origin !== UFORA || !e.data) return;
+  const uitKader = e.source === bron.contentWindow, uitVenster = !!venster && e.source === venster;
+  if (!uitKader && !uitVenster) return;
+  const d = e.data;
+  if (d.type === 'swop-hallo') {
+    clearTimeout(wachten);
+    aanbieder = e.source;
+    e.source.postMessage({ type: 'swop-vraag' }, UFORA);
+    if (!resultaat) {
+      document.getElementById('laadtekst').textContent = 'Groepsindelingen en roosters ophalen\u2026';
+      status('Even geduld\u2026');
+      toonKaart($laden);
+    }
+  } else if (d.type === 'swop-voortgang') {
+    if (!resultaat) toonVoortgang(d);
+  } else if (d.type === 'swop-resultaat') {
+    resultaat = d; resultaatVia = uitKader ? 'kader' : 'venster';
+    clearInterval(controle); clearTimeout(vensterWacht); venster = null;
+    toonKaart(resultaat && !$laden.hidden ? $laden : null);
+    status(`Ingelogd als ${d.ingelogdAls}`);
+    toonResultaat(d);
+  } else if (d.type === 'swop-fout') {
+    status(d.tekst);
+  } else if (d.type === 'swop-geweigerd') {
+    // Het Ufora-bestand kent dit blok niet: adres van dit blok toevoegen aan TOEGELATEN_BLOKKEN
+    status('Dit blok is nog niet toegelaten in het Ufora-bestand (' + location.origin + ').');
+    $laden.hidden = true;
+  }
+});
+
+// Kader geladen maar geen "hallo": daar staat de inlogpagina van Ufora (of een foutpagina)
+bron.addEventListener('load', () => {
+  if (aanbieder === bron.contentWindow || resultaat) return;
+  clearTimeout(wachten);
+  wachten = setTimeout(kiesKaart, 1200);
+});
+setTimeout(kiesKaart, 10000);                       // vangnet als het laden blijft hangen
+toonKaart($laden);
+
+async function kiesKaart() {
+  if (resultaat || aanbieder || besloten) return;
+  besloten = true;
+  if (await ingelogdOpUfora()) return toonKaart($toegang);
+  toonInlog('start');
+}
+function ingelogdOpUfora() {
+  return new Promise(klaarMet => {
+    if (!INLOGPROEF) return klaarMet(false);
+    const img = new Image(), stop = setTimeout(() => klaarMet(false), 5000);
+    img.onload = () => { clearTimeout(stop); klaarMet(true); };
+    img.onerror = () => { clearTimeout(stop); klaarMet(false); };
+    img.src = INLOGPROEF + (INLOGPROEF.includes('?') ? '&' : '?') + 'swop=' + Date.now();
+  });
+}
+
+// Klein venster naar Ufora: daar werkt je login altijd (ook in Safari). Het geeft enkel jouw resultaat door en sluit.
+let vensterWacht = null;
+function openVenster() {
+  venster = window.open(BRON + '?venster=1', 'swop-ufora', 'popup,width=480,height=640');
+  if (!venster) return toonInlog('geblokkeerd');
+  if (!resultaat) toonInlog('venster');
+  clearTimeout(vensterWacht);
+  const dit = venster;
+  vensterWacht = setTimeout(() => controleerVenster(dit), 5000);
+  clearInterval(controle);
+  controle = setInterval(() => {
+    if (!venster || !venster.closed) return;
+    clearInterval(controle); venster = null;
+    if (!resultaat) toonInlog('opnieuw');
+  }, 500);
+}
+document.getElementById('inlogknop').addEventListener('click', openVenster);
+
+// Venster nog verbonden maar na 5 s geen antwoord: daar staat de inlogpagina van Ufora of "Niet geautoriseerd"
+// (ingelogd, maar geen toegang tot het bestand). Een Ufora-pagina zonder onze code kan niets terugzeggen,
+// dus: ben je aantoonbaar ingelogd (INLOGPROEF), dan is het "Niet geautoriseerd" -> venster dicht, kaart "Geen toegang".
+async function controleerVenster(dit) {
+  if (resultaat || venster !== dit || dit.closed || aanbieder === dit) return;
+  if (await ingelogdOpUfora()) {
+    if (resultaat || venster !== dit || aanbieder === dit) return;
+    sluitVenster();
+    status('');
+    return toonKaart($toegang);
+  }
+  if (resultaat || venster !== dit || dit.closed || aanbieder === dit) return;
+  toonInlog('twijfel');
+}
+function sluitVenster() {
+  clearInterval(controle); clearTimeout(vensterWacht);
+  try { if (venster && !venster.closed) venster.close(); } catch (_) {}
+  venster = null;
+}
+document.getElementById('geentoegangknop').addEventListener('click', () => { sluitVenster(); status(''); toonKaart($toegang); });
+
+// Terug op dit tabblad (bv. na inloggen in het venster): het verborgen kader stil opnieuw proberen
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && !resultaat && !aanbieder) bron.src = BRON;
+});
+
+</script>
